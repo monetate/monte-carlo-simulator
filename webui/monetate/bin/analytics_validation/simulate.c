@@ -160,7 +160,7 @@ main(int argc, char** argv)
         group_weights[i] = parse_double(argv[i + 2]);
     }
 
-    /* TODO: Assert simulations even number >= 382 sse2 implementation. */
+    /* TODO: Assert simulations even number >= 382 for sse2 implementation. */
     simulate(stdin, stdout, group_weights, groups, simulations);
 
     return 0;
