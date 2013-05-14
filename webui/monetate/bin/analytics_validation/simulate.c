@@ -15,23 +15,18 @@ typedef struct Summary {
 } Summary;
 
 
-/* Parses and splits command line argument into array of ints
- *
- * Arguments:
- * s -- command line argument of form "20,80"
- * group_counts -- array indexed by Group to hold counts
- * num_groups -- total number of groups
+/*
  */
-static void
-parse_group_counts(char* s, int* group_counts, int num_groups)
+static double
+parse_double(char* s)
 {
-    int i;
-    char* tok;
-    tok = (strtok(s, ","));
-    for (i = 0; i < num_groups; i++) {
-        group_counts[i] = atoi(tok);
-        tok = strtok(NULL, ",");
+    char* end;
+    double r = strtod(s, &end);
+    if (*end) {
+        fprintf(stderr, "Invalid double characters: %s\n", s);
+        exit(2);
     }
+    return r;
 }
 
 
@@ -68,31 +63,27 @@ output_summary(FILE* fp, int g, Summary* summary)
 /* Pull in visitor Summaries, run random simulations and write simulation Summaries back out.
  */
 static void
-simulate(FILE* in, FILE* out, int num_groups, int* group_counts, int num_simulations)
+simulate(FILE* in, FILE* out, double* group_weights, int groups, int simulations)
 {
-
-    /* Compute double cdf for each group, we should get the input as weights instead of samples. */
-    int total = 0;
-    for (int g = 0; g < num_groups; ++g) {
-        total += group_counts[g];
+    /* Compute group cdf */
+    double cdf[groups];
+    double total_weight = 0;
+    for (int g = 0; g < groups; ++g) {
+        total_weight += group_weights[g];
+    }
+    double cumulative_weight = 0;
+    for (int g = 0; g < groups; ++g) {
+        cumulative_weight += group_weights[g];
+        cdf[g] = (double) cumulative_weight / total_weight;
     }
 
-    double cdf[num_groups];
-    int cummulative = 0;
-    for (int g = 0; g < num_groups; ++g) {
-        cummulative += group_counts[g];
-        cdf[g] = (double) cummulative / total;
-    }
+    /* Initialize simulation summaries to zero */
+    Summary *totals = calloc(simulations * groups, sizeof(Summary));
 
-
-    /* Initialize simulation summaries to zero
-     */
-    Summary *totals = calloc(num_simulations * num_groups, sizeof(Summary));
-    double *batch_random =  memalign(16, sizeof(double) * num_simulations);
-
+    /* Initialize random number generator */
     dsfmt_t dsfmt;
     dsfmt_init_gen_rand(&dsfmt, 1234);
-
+    double *batch_random = (double *) memalign(16, sizeof(double) * simulations);
 
     /* For each line in the file:
      *   Parse visitor line and return Summary struct
@@ -103,31 +94,29 @@ simulate(FILE* in, FILE* out, int num_groups, int* group_counts, int num_simulat
         Summary summary;
         parse_visitor_summary(&summary, line);
 
-        /* genearte num_simulation doubles in the interval [0, 1). */
-        dsfmt_fill_array_close_open(&dsfmt, batch_random, num_simulations);
+        /* Generate simulations doubles in the interval [0, 1). */
+        dsfmt_fill_array_close_open(&dsfmt, batch_random, simulations);
 
         int row = 0;
-        for (int i = 0; i < num_simulations; ++i) {
-
-            double my_random = batch_random[i];
-
-            /* select group for this visitor this iteration */
+        for (int i = 0; i < simulations; ++i) {
+            /* Select group for visitor this iteration */
+            double rnd = batch_random[i];
             int g = 0;
-            while (cdf[g] < my_random && g < num_groups - 1) { ++g; }
+            while (g < groups - 1 && cdf[g] < rnd) { ++g; }
 
             totals[row + g].y0 += summary.y0;
             totals[row + g].y1 += summary.y1;
             totals[row + g].y2 += summary.y2;
 
-            row += num_groups;
+            row += groups;
         }
     }
 
     /* Write our simulation Summaries to file
      */
-    for (int g = 0; g < num_groups; ++g) {
-        for (int i = 0; i < num_simulations; ++i) {
-          output_summary(out, g, &totals[num_groups * i + g]);
+    for (int g = 0; g < groups; ++g) {
+        for (int i = 0; i < simulations; ++i) {
+          output_summary(out, g, &totals[groups * i + g]);
         }
     }
 
@@ -138,14 +127,20 @@ simulate(FILE* in, FILE* out, int num_groups, int* group_counts, int num_simulat
 int
 main(int argc, char** argv)
 {
-    int num_groups = atoi(argv[1]);
+    if (argc < 2) {
+        fprintf(stderr, "Usage: simulate iterations weight0 weight1 ...");
+        exit(2);
+    }
 
-    int group_counts[num_groups];
-    parse_group_counts(argv[2], group_counts, num_groups);
+    int simulations = atoi(argv[1]);
+    int groups = argc - 2;
 
-    int num_simulations = atoi(argv[3]);
+    double group_weights[groups];
+    for (int i = 0; i < groups; ++i) {
+        group_weights[i] = parse_double(argv[i + 2]);
+    }
 
-    simulate(stdin, stdout, num_groups, group_counts, num_simulations);
+    simulate(stdin, stdout, group_weights, groups, simulations);
 
     return 0;
 }
