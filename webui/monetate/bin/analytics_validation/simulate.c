@@ -104,7 +104,7 @@ simulate(FILE* in, FILE* out, double* group_weights, int groups, int simulations
         Summary visitor_summary;
         parse_visitor_summary(&visitor_summary, line);
 
-        /* Generate simulations doubles in the interval [0, 1). */
+        /* Generate random doubles in the interval [0, 1). */
         dsfmt_fill_array_close_open(&dsfmt, visitor_randoms, simulations);
 
         int row = 0;
