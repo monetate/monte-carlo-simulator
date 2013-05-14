@@ -30,7 +30,7 @@ typedef struct Summary {
 
 
 
-uint32_t
+static uint32_t
 parse_uint32(char const* s)
 {
     char* end;
@@ -98,6 +98,7 @@ simulate(FILE* in, FILE* out, double* group_weights, int groups, int simulations
     /* Initialize random number generator. */
     dsfmt_t dsfmt;
     dsfmt_init_gen_rand(&dsfmt, 1234);
+    /* 128 bit alignment for sse2 ops. */
     double *visitor_randoms = (double *) memalign(16, sizeof(double) * simulations);
 
     /* For each line in the file:
