@@ -147,7 +147,7 @@ int
 main(int argc, char** argv)
 {
     if (argc < 2) {
-        fprintf(stderr, "Usage: simulate iterations weight0 weight1 ...");
+        fprintf(stderr, "Usage: simulate iterations weight0 weight1 ...\n");
         exit(2);
     }
 
