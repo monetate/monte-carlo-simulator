@@ -4,7 +4,9 @@
 #include <stdint.h>
 #include <string.h>
 
-typedef int Group;
+#define DSFMT_DO_NOT_USE_OLD_NAMES
+#include "dSFMT.h"
+
 
 typedef struct Summary {
     uint32_t y0;
@@ -12,17 +14,7 @@ typedef struct Summary {
     double y2;
 } Summary;
 
-static int
-rand_int(int n)
-{
-  int limit = RAND_MAX - RAND_MAX % n;
-  int rnd;
 
-  do {
-    rnd = random();
-  } while (rnd >= limit);
-  return rnd % n;
-}
 
 /* Parses and splits command line argument into array of ints
  *
@@ -31,7 +23,7 @@ rand_int(int n)
  * group_counts -- array indexed by Group to hold counts
  * num_groups -- total number of groups
  */
-void
+static void
 parse_group_counts(char* s, int* group_counts, int num_groups)
 {
   int i;
@@ -50,7 +42,7 @@ parse_group_counts(char* s, int* group_counts, int num_groups)
  * summary -- Summary struct to use
  * line -- Comma separated line of form "2.1000305503.1365983513775,1,0.0,0.0"
  */
-void
+static void
 parse_visitor_summary(Summary* summary, char* line)
 {
     char* token_state;
@@ -62,99 +54,98 @@ parse_visitor_summary(Summary* summary, char* line)
 
 /* Write a Summary to a file with Group
  */
-void
-output_summary(FILE* fp, Group g, Summary* summary)
+static void
+output_summary(FILE* fp, int g, Summary* summary)
 {
-  fprintf(fp, "%d,%d,%f,%f\n",
+  fprintf(fp, "%d,%d,%lf,%lf\n",
       g,
       summary->y0,
       summary->y1,
       summary->y2);
 }
 
-/* Return a random group from possible choices
- *
- * Arguments:
- * visitor_count -- Total possible visitors/choices
- * choices -- array of possible group choices  (ex: [1, 2, 2, 3, 3, 3])
- */
-Group
-get_random_group(int visitor_count, int *choices)
-{
-  return choices[rand_int(visitor_count)];
-}
 
 /* Pull in visitor Summaries, run random simulations and write simulation Summaries back out.
  */
-void
+static void
 simulate(FILE* in, FILE* out, int num_groups, int* group_counts, int num_simulations)
 {
-  srand (time(NULL));
 
-  int i;
-
-  int s;
-  Group g;
-  int visitor_count=0;
-  for(g=0; g < num_groups; g++){
-    visitor_count += group_counts[g];
+  /* Compute double cdf for each group, we should get the input as weights instead of samples. */
+  int total = 0;
+  for (int g = 0; g < num_groups; ++g) {
+    total += group_counts[g];
   }
 
-  /* Create choices array that we can pull a random weighted group
-   * Ex: num_groups = 3, group_counts [1, 2, 3]
-   * Will create choices = [0, 1, 1, 2, 2, 2]
-   * We can then use choices in get_random_group to pull out a weighted random group.
-   */
-  int j, v = 0;
-  int *choices = malloc(visitor_count * sizeof(Group));
-  for(g=0; g < num_groups; g++){
-    for(j=0; j < group_counts[g]; j++) {
-      choices[v] = g;
-      v++; // v is visitor index
-    }
+  double cdf[num_groups];
+  int cummulative = 0;
+  for (int g = 0; g < num_groups; ++g) {
+    cummulative += group_counts[g];
+	cdf[g] = (double) cummulative / total;
   }
+
 
   /* Initialize simulation summaries to zero
    */
-  Summary *simulations = calloc(num_groups * num_simulations, sizeof(Summary));
+  Summary *totals = calloc(num_simulations * num_groups, sizeof(Summary));
+  double *batch_random =  memalign(16, sizeof(double) * num_simulations);
+  
+  dsfmt_t dsfmt;
+  dsfmt_init_gen_rand(&dsfmt, 1234);
+  
 
   /* For each line in the file:
    *   Parse visitor line and return Summary struct
    *   Run simulations and increment the simulation Summary indexed by group and simulation
    */
   char line[1024];
-  while (fgets(line, sizeof(line), in)){
+  while (fgets(line, sizeof(line), in)) {
     Summary summary;
     parse_visitor_summary(&summary, line);
-
-    for(s=0; s < num_simulations; s++) {
-      Group group = get_random_group(visitor_count, choices);
-
-      simulations[num_groups * s + group].y0 += summary.y0;
-      simulations[num_groups * s + group].y1 += summary.y1;
-      simulations[num_groups * s + group].y2 += summary.y2;
-    }
+	
+	/* genearte num_simulation doubles in the interval [0, 1). */
+	dsfmt_fill_array_close_open(&dsfmt, batch_random, num_simulations);
+	
+	int row = 0;
+	    for (int i = 0; i < num_simulations; ++i) {
+	
+	  double my_random = batch_random[i];
+	
+	  /* select group for this visitor this iteration */
+	  int g = 0;
+	  while (cdf[g] < my_random && g < num_groups - 1) { ++g; }
+	
+	      totals[row + g].y0 += summary.y0;
+	      totals[row + g].y1 += summary.y1;
+	      totals[row + g].y2 += summary.y2;
+	
+	  row += num_groups;
+	    }
   }
 
-  /* Write our simulation Summaries to file
+  /* Write our simulation Summaries to file 
    */
-  for(g=0; g < num_groups; g++){
-    for(s=0; s < num_simulations; s++){
-      output_summary(out, g, &simulations[num_groups * s + g]);
+  for (int g = 0; g < num_groups; g++) {
+    for (int i = 0; i < num_simulations; i++) {
+      output_summary(out, g, &totals[num_groups * i + g]);
     }
   }
 
-  free(simulations);
-  free(choices);
+  free(batch_random);
+  free(totals);
 }
 
 int
 main(int argc, char** argv)
 {
   int num_groups = atoi(argv[1]);
-  int num_simulations = atoi(argv[3]);
+
   int group_counts[num_groups];
   parse_group_counts(argv[2], group_counts, num_groups);
+
+  int num_simulations = atoi(argv[3]);
+
   simulate(stdin, stdout, num_groups, group_counts, num_simulations);
+
   return 0;
 }
