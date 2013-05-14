@@ -148,7 +148,7 @@ main(int argc, char** argv)
 {
     if (argc < 3) {
         fprintf(stderr, "Usage: simulate iterations weight0 weight1 ...\n");
-        exit(2);
+        exit(1);
     }
 
     int simulations = atoi(argv[1]);
@@ -159,6 +159,7 @@ main(int argc, char** argv)
         group_weights[i] = parse_double(argv[i + 2]);
     }
 
+    /* TODO: Assert simulations even number >= 382 sse2 implementation. */
     simulate(stdin, stdout, group_weights, groups, simulations);
 
     return 0;
