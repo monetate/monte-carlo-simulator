@@ -1,6 +1,9 @@
 /*
  * Copyright 2013 Monetate, Inc.
  *
+ * Links against Double precision SIMD-oriented Fast Mersenne Twister (dSFMT) library.
+ *    http://www.math.sci.hiroshima-u.ac.jp/~m-mat/MT/SFMT/index.html
+ *
  * build
  *    gcc -O3 -std=c99 -msse2 -DHAVE_SSE2 -DDSFMT_MEXP=19937 -o simulate dSFMT.c simulate.c
  *
