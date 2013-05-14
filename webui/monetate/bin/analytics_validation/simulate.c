@@ -7,11 +7,13 @@
  * run
  *    simulate iterations group_weight_0 group_weight_1 ...
  */
-#include <stdio.h>
-#include <stdlib.h>
-#include <time.h>
+
+#include <malloc.h>
 #include <stdint.h>
+#include <stdlib.h>
+#include <stdio.h>
 #include <string.h>
+#include <time.h>
 
 #define DSFMT_DO_NOT_USE_OLD_NAMES
 #include "dSFMT.h"
@@ -39,7 +41,7 @@ parse_uint32(char const* s)
 
 
 static double
-parse_double(char* s)
+parse_double(char const* s)
 {
     char* end;
     double r = strtod(s, &end);
@@ -99,7 +101,7 @@ simulate(FILE* in, FILE* out, double* group_weights, int groups, int simulations
      *   Parse visitor line and return Summary struct
      *   Run simulations and increment the simulation Summary indexed by group and simulation
      */
-    char line[1024];
+    char line[128];
     while (fgets(line, sizeof(line), in)) {
         Summary visitor_summary;
         parse_visitor_summary(&visitor_summary, line);
@@ -107,27 +109,29 @@ simulate(FILE* in, FILE* out, double* group_weights, int groups, int simulations
         /* Generate random doubles in the interval [0, 1). */
         dsfmt_fill_array_close_open(&dsfmt, visitor_randoms, simulations);
 
-        int row = 0;
+        Summary *row = group_summaries;
         for (int i = 0; i < simulations; ++i) {
             /* Select group for visitor this iteration */
             double rnd = visitor_randoms[i];
             int g = 0;
             while (g < groups - 1 && cdf[g] < rnd) { ++g; }
 
-            group_summaries[row + g].y0 += visitor_summary.y0;
-            group_summaries[row + g].y1 += visitor_summary.y1;
-            group_summaries[row + g].y2 += visitor_summary.y2;
+            Summary *group_summary = row + g;
+            group_summary->y0 += visitor_summary.y0;
+            group_summary->y1 += visitor_summary.y1;
+            group_summary->y2 += visitor_summary.y2;
 
-            row += groups; // groups * i
+            row += groups;
         }
     }
 
     /* Output group_summaries. */
-    Summary *summary = group_summaries;
+    Summary *group_summary = group_summaries;
     for (int i = 0; i < simulations; ++i) {
         for (int g = 0; g < groups; ++g) {
-            fprintf(out, "%d,%d,%d,%lf,%lf\n", i, g, summary->y0, summary->y1, summary->y2);
-            ++summary;
+            fprintf(out, "%d,%d,%d,%lf,%lf\n", i, g,
+                group_summary->y0, group_summary->y1, group_summary->y2);
+            ++group_summary;
         }
     }
 
