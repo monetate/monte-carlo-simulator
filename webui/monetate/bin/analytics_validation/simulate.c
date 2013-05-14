@@ -1,3 +1,12 @@
+/*
+ * Copyright 2013 Monetate, Inc.
+ *
+ * build
+ *    gcc -O3 -std=c99 -msse2 -DHAVE_SSE2 -DDSFMT_MEXP=19937 -o simulate dSFMT.c simulate.c
+ *
+ * run
+ *    simulate iterations group_weight_0 group_weight_1 ...
+ */
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
@@ -42,7 +51,8 @@ parse_double(char* s)
 }
 
 
-/* Parses and splits csv line and into Summary struct
+/*
+ * Parses and splits csv line and into Summary struct
  *
  * Arguments:
  * summary -- Summary struct to use
@@ -59,7 +69,8 @@ parse_visitor_summary(Summary* summary, char* line)
 }
 
 
-/* Pull in visitor Summaries, run random simulations and write simulation Summaries back out.
+/*
+ * Pull in visitor Summaries, run random simulations and write simulation Summaries back out.
  */
 static void
 simulate(FILE* in, FILE* out, double* group_weights, int groups, int simulations)
