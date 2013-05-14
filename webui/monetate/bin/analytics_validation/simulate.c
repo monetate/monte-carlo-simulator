@@ -15,15 +15,27 @@ typedef struct Summary {
 } Summary;
 
 
-/*
- */
+
+uint32_t
+parse_uint32(char const* s)
+{
+    char* end;
+    uint32_t r = strtol(s, &end, 10);
+    if (*end) {
+        fprintf(stderr, "Non integral characters: %s\n", s);
+        exit(2);
+    }
+    return r;
+}
+
+
 static double
 parse_double(char* s)
 {
     char* end;
     double r = strtod(s, &end);
     if (*end) {
-        fprintf(stderr, "Invalid double characters: %s\n", s);
+        fprintf(stderr, "Non floating point characters: %s\n", s);
         exit(2);
     }
     return r;
@@ -41,22 +53,9 @@ parse_visitor_summary(Summary* summary, char* line)
 {
     char* token_state;
     strtok_r(line, ",", &token_state); // monetate_id, which we don't care about
-    summary->y0 = atoi(strtok_r(NULL, ",", &token_state));
-    summary->y1 = atof(strtok_r(NULL, ",", &token_state));
-    summary->y2 = atof(strtok_r(NULL, ",", &token_state));
-}
-
-
-/* Write a Summary to a file with Group
- */
-static void
-output_summary(FILE* fp, int g, Summary* summary)
-{
-    fprintf(fp, "%d,%d,%lf,%lf\n",
-        g,
-        summary->y0,
-        summary->y1,
-        summary->y2);
+    summary->y0 = parse_uint32(strtok_r(NULL, ",", &token_state));
+    summary->y1 = parse_double(strtok_r(NULL, ",", &token_state));
+    summary->y2 = parse_double(strtok_r(NULL, "\n", &token_state));
 }
 
 
@@ -78,12 +77,12 @@ simulate(FILE* in, FILE* out, double* group_weights, int groups, int simulations
     }
 
     /* Initialize simulation summaries to zero */
-    Summary *totals = calloc(simulations * groups, sizeof(Summary));
+    Summary *summaries = calloc(simulations * groups, sizeof(Summary));
 
     /* Initialize random number generator */
     dsfmt_t dsfmt;
     dsfmt_init_gen_rand(&dsfmt, 1234);
-    double *batch_random = (double *) memalign(16, sizeof(double) * simulations);
+    double *visitor_random = (double *) memalign(16, sizeof(double) * simulations);
 
     /* For each line in the file:
      *   Parse visitor line and return Summary struct
@@ -91,37 +90,39 @@ simulate(FILE* in, FILE* out, double* group_weights, int groups, int simulations
      */
     char line[1024];
     while (fgets(line, sizeof(line), in)) {
-        Summary summary;
-        parse_visitor_summary(&summary, line);
+        Summary visitor_summary;
+        parse_visitor_summary(&visitor_summary, line);
 
         /* Generate simulations doubles in the interval [0, 1). */
-        dsfmt_fill_array_close_open(&dsfmt, batch_random, simulations);
+        dsfmt_fill_array_close_open(&dsfmt, visitor_random, simulations);
 
         int row = 0;
         for (int i = 0; i < simulations; ++i) {
             /* Select group for visitor this iteration */
-            double rnd = batch_random[i];
+            double rnd = visitor_random[i];
             int g = 0;
             while (g < groups - 1 && cdf[g] < rnd) { ++g; }
 
-            totals[row + g].y0 += summary.y0;
-            totals[row + g].y1 += summary.y1;
-            totals[row + g].y2 += summary.y2;
+            summaries[row + g].y0 += visitor_summary.y0;
+            summaries[row + g].y1 += visitor_summary.y1;
+            summaries[row + g].y2 += visitor_summary.y2;
 
-            row += groups;
+            row += groups; // groups * i
         }
     }
 
     /* Write our simulation Summaries to file
      */
-    for (int g = 0; g < groups; ++g) {
-        for (int i = 0; i < simulations; ++i) {
-          output_summary(out, g, &totals[groups * i + g]);
+    for (int i = 0; i < simulations; ++i) {
+        for (int g = 0; g < groups; ++g) {
+            Summary *summary = &summaries[groups * i + g];
+            fprintf(out, "%d,%d,%d,%lf,%lf\n",
+                i, g, summary->y0, summary->y1, summary->y2);
         }
     }
 
-    free(batch_random);
-    free(totals);
+    free(visitor_random);
+    free(summaries);
 }
 
 int
