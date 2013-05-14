@@ -23,7 +23,7 @@
 
 
 typedef struct Summary {
-    uint32_t y0;
+    double y0;
     double y1;
     double y2;
 } Summary;
@@ -68,7 +68,7 @@ parse_visitor_summary(Summary* summary, char* line)
 {
     char* token_state;
     strtok_r(line, ",", &token_state); // monetate_id, which we don't care about
-    summary->y0 = parse_uint32(strtok_r(NULL, ",", &token_state));
+    summary->y0 = parse_double(strtok_r(NULL, ",", &token_state));
     summary->y1 = parse_double(strtok_r(NULL, ",", &token_state));
     summary->y2 = parse_double(strtok_r(NULL, "\n", &token_state));
 }
@@ -98,12 +98,13 @@ simulate(FILE* in, FILE* out, double* group_weights, int groups, int simulations
     /* Initialize random number generator. */
     dsfmt_t dsfmt;
     dsfmt_init_gen_rand(&dsfmt, 1234);
+
     /* 128 bit alignment for sse2 ops. */
     double *visitor_randoms = (double *) memalign(16, sizeof(double) * simulations);
 
-    /* For each line in the file:
-     *   Parse visitor line and return Summary struct
-     *   Run simulations and increment the simulation Summary indexed by group and simulation
+    /* For each input line:
+     *   Parse visitor summary line.
+     *   Accumulate into random summary group for each simulation trial.
      */
     char line[128];
     while (fgets(line, sizeof(line), in)) {
@@ -133,7 +134,7 @@ simulate(FILE* in, FILE* out, double* group_weights, int groups, int simulations
     Summary *group_summary = group_summaries;
     for (int i = 0; i < simulations; ++i) {
         for (int g = 0; g < groups; ++g) {
-            fprintf(out, "%d,%d,%d,%lf,%lf\n", i, g,
+            fprintf(out, "%d,%d,%lf,%lf,%lf\n", i, g,
                 group_summary->y0, group_summary->y1, group_summary->y2);
             ++group_summary;
         }
