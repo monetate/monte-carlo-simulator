@@ -75,7 +75,7 @@ parse_visitor_summary(Summary* summary, char* line)
 static void
 simulate(FILE* in, FILE* out, double* group_weights, int groups, int simulations)
 {
-    /* Compute group cdf */
+    /* Compute group cdf. */
     double cdf[groups];
     double total_weight = 0;
     for (int g = 0; g < groups; ++g) {
@@ -87,13 +87,13 @@ simulate(FILE* in, FILE* out, double* group_weights, int groups, int simulations
         cdf[g] = (double) cumulative_weight / total_weight;
     }
 
-    /* Initialize simulation summaries to zero */
-    Summary *summaries = calloc(simulations * groups, sizeof(Summary));
+    /* Initialize group_summaries to zero. */
+    Summary *group_summaries = calloc(simulations * groups, sizeof(Summary));
 
-    /* Initialize random number generator */
+    /* Initialize random number generator. */
     dsfmt_t dsfmt;
     dsfmt_init_gen_rand(&dsfmt, 1234);
-    double *visitor_random = (double *) memalign(16, sizeof(double) * simulations);
+    double *visitor_randoms = (double *) memalign(16, sizeof(double) * simulations);
 
     /* For each line in the file:
      *   Parse visitor line and return Summary struct
@@ -105,35 +105,34 @@ simulate(FILE* in, FILE* out, double* group_weights, int groups, int simulations
         parse_visitor_summary(&visitor_summary, line);
 
         /* Generate simulations doubles in the interval [0, 1). */
-        dsfmt_fill_array_close_open(&dsfmt, visitor_random, simulations);
+        dsfmt_fill_array_close_open(&dsfmt, visitor_randoms, simulations);
 
         int row = 0;
         for (int i = 0; i < simulations; ++i) {
             /* Select group for visitor this iteration */
-            double rnd = visitor_random[i];
+            double rnd = visitor_randoms[i];
             int g = 0;
             while (g < groups - 1 && cdf[g] < rnd) { ++g; }
 
-            summaries[row + g].y0 += visitor_summary.y0;
-            summaries[row + g].y1 += visitor_summary.y1;
-            summaries[row + g].y2 += visitor_summary.y2;
+            group_summaries[row + g].y0 += visitor_summary.y0;
+            group_summaries[row + g].y1 += visitor_summary.y1;
+            group_summaries[row + g].y2 += visitor_summary.y2;
 
             row += groups; // groups * i
         }
     }
 
-    /* Write our simulation Summaries to file
-     */
+    /* Output group_summaries. */
+    Summary *summary = group_summaries;
     for (int i = 0; i < simulations; ++i) {
         for (int g = 0; g < groups; ++g) {
-            Summary *summary = &summaries[groups * i + g];
-            fprintf(out, "%d,%d,%d,%lf,%lf\n",
-                i, g, summary->y0, summary->y1, summary->y2);
+            fprintf(out, "%d,%d,%d,%lf,%lf\n", i, g, summary->y0, summary->y1, summary->y2);
+            ++summary;
         }
     }
 
-    free(visitor_random);
-    free(summaries);
+    free(visitor_randoms);
+    free(group_summaries);
 }
 
 int
