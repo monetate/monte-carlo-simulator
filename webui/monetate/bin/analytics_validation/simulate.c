@@ -5,7 +5,7 @@
  *    http://www.math.sci.hiroshima-u.ac.jp/~m-mat/MT/SFMT/index.html
  *
  * build
- *    gcc -O3 -std=c99 -msse2 -DHAVE_SSE2 -DDSFMT_MEXP=19937 -o simulate dSFMT.c simulate.c
+ *    gcc -O3 -std=gnu99 -msse2 -DHAVE_SSE2 -DDSFMT_MEXP=19937 -o simulate dSFMT.c simulate.c
  *
  * run
  *    simulate iterations group_weight_0 group_weight_1 ...
