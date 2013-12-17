@@ -11,3 +11,11 @@ dSFMT: $(dSFMT).tar.gz
 
 simulate: dSFMT simulate.c
 	$(CC) -Wall -O3 -std=gnu99 -msse2 -DHAVE_SSE2 -DDSFMT_MEXP=19937 -o simulate dSFMT/dSFMT.c simulate.c
+
+test: all
+	cd tests/; ./test.sh
+
+sync:
+	rsync -avt --delete --exclude=".git" --exclude="dSFMT*" . $(DEVBOX)
+
+.PHONY : all test sync
