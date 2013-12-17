@@ -16,3 +16,7 @@
 *.exe
 *.out
 *.app
+
+# Build artifacts
+dSFMT*
+simulate
