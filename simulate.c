@@ -47,10 +47,10 @@ parse_double(char const* s)
  *
  * Arguments:
  * summary -- Summary struct to use
- * line -- Comma separated line of form "2.1000305503.1365983513775,1,0.0,0.0"
+ * line -- Comma separated line of form "sample_id,1,0.0,0.0"
  */
 static void
-parse_visitor_summary(Summary* summary, char* line)
+parse_sample_summary_line(Summary* summary, char* line)
 {
     char* token_state;
     strtok_r(line, ",", &token_state); // monetate_id, which we don't care about
@@ -61,12 +61,23 @@ parse_visitor_summary(Summary* summary, char* line)
 
 
 /*
- * Pull in visitor Summaries, run random simulations and write simulation Summaries back out.
+ * Pull in csv summaries, run random simulations and write simulation results back out.
+ *
+ * Arguments:
+ * in -- CSV file of sample summaries
+ * out -- CSV file of simulation results
+ * group_weights -- Array of weights as passed in from command line. Ex: [25.0, 25.0, 50.0]
+ * groups -- Number of groups
+ * simulations -- Number of simulation iterations to run
  */
 static void
 simulate(FILE* in, FILE* out, double* group_weights, int groups, int simulations)
 {
-    /* Compute group cdf. */
+    /* 
+     * Compute group cumlative distribution.
+     *
+     * Given group_weights of [33, 33, 33], cdf will be [0.3333, 0.6667, 1.0000]
+     */
     double cdf[groups];
     double total_weight = 0;
     for (int g = 0; g < groups; ++g) {
@@ -86,31 +97,32 @@ simulate(FILE* in, FILE* out, double* group_weights, int groups, int simulations
     dsfmt_init_gen_rand(&dsfmt, 1234);
 
     /* 128 bit alignment for sse2 ops. */
-    double *visitor_randoms = (double *) memalign(16, sizeof(double) * simulations);
+    double *randoms = (double *) memalign(16, sizeof(double) * simulations);
 
     /* For each input line:
-     *   Parse visitor summary line.
-     *   Accumulate into random summary group for each simulation trial.
+     *   Parse summary line.
+     *   Generate random doubles for each simulation.
+     *   Accumulate into random summary group for each simulation.
      */
     char line[128];
     while (fgets(line, sizeof(line), in)) {
-        Summary visitor_summary;
-        parse_visitor_summary(&visitor_summary, line);
+        Summary sample_summary;
+        parse_sample_summary_line(&sample_summary, line);
 
         /* Generate random doubles in the interval [0, 1). */
-        dsfmt_fill_array_close_open(&dsfmt, visitor_randoms, simulations);
+        dsfmt_fill_array_close_open(&dsfmt, randoms, simulations);
 
         Summary *row = group_summaries;
         for (int i = 0; i < simulations; ++i) {
-            /* Select group for visitor this iteration */
-            double rnd = visitor_randoms[i];
+            /* Select group for this sample and this iteration */
+            double rnd = randoms[i];
             int g = 0;
             while (g < groups - 1 && cdf[g] < rnd) { ++g; }
 
             Summary *group_summary = row + g;
-            group_summary->y0 += visitor_summary.y0;
-            group_summary->y1 += visitor_summary.y1;
-            group_summary->y2 += visitor_summary.y2;
+            group_summary->y0 += sample_summary.y0;
+            group_summary->y1 += sample_summary.y1;
+            group_summary->y2 += sample_summary.y2;
 
             row += groups;
         }
@@ -126,7 +138,7 @@ simulate(FILE* in, FILE* out, double* group_weights, int groups, int simulations
         }
     }
 
-    free(visitor_randoms);
+    free(randoms);
     free(group_summaries);
 }
 
