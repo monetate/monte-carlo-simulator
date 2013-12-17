@@ -1,5 +1,10 @@
 #!/bin/bash
 
+# Functional tests that ensure `simulate` binary behaves as expected.
+
+# Usage: (from project root directory)
+# make functional_tests
+
 FAILED_TEST=64
 
 # Test that the simulator is producing the expected output (in ./results.csv)
