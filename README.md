@@ -73,11 +73,11 @@ between the two groups, but some may lay outside of our $1.50 **observed differe
 | 9999       | Experiment | 993429      | 100001                   | 9534543                             |
 | 9999       | Control    | 1006571     | 129993                   | 8738439                             |
 
-If we see that 1000 randomized simulations had a difference of more than $1.50, we can say that there is a 10% chance that our
+If we see that 1000 of the 10,000 random iterations had a difference of more than $1.50, we can say that there is a 10% chance that our
 $1.50 **observed difference** was due to randomness.
 
-Although technically not a direct comparison, we can compare our computed p-value of 11% to our simulated 10% result,
-which ain't bad. :ok_hand:
+Although technically not a direct comparison, we can compare our computed p-value of 11% to our simulated 10% result to
+determine whether or not the model is accurate enough.
 
 ## Installation
 

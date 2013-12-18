@@ -53,7 +53,7 @@ static void
 parse_sample_summary_line(Summary* summary, char* line)
 {
     char* token_state;
-    strtok_r(line, ",", &token_state); // monetate_id, which we don't care about
+    strtok_r(line, ",", &token_state); // sample_id, which we don't care about
     summary->y0 = parse_double(strtok_r(NULL, ",", &token_state));
     summary->y1 = parse_double(strtok_r(NULL, ",", &token_state));
     summary->y2 = parse_double(strtok_r(NULL, "\n", &token_state));
