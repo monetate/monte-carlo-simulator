@@ -33,7 +33,7 @@ consistent experience.*
 | ------ | -------    | -------     | --------------------     | ------------------------------      |
 | john   | Experiment | 2           | 0                        | 0                                   |
 | suzy   | Control    | 1           | 9                        | 81                                  |
-| bob    | Experiment | 2           | 17                       | 245                                 |
+| bob    | Experiment | 2           | 17                       | 145                                 |
 
 From storing the info this way, we can compute our **observed difference** with statistical significance in revenue per visit between the two groups.
 
