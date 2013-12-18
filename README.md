@@ -160,6 +160,7 @@ The result csv will contain 5 columns with no header row.
 * Jeffrey Persch
 * Chris Conley
 * Gil Raphaelli
+* Austin Rochford
 
 ### Running Tests
 
