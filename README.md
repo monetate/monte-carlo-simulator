@@ -48,7 +48,7 @@ visitors in the Experiment group and none in the Control group. In the second si
 | ...        | ...        | ...         | ...                      | ...                                 |
 
 If we see that 9000 randomized simulations had a difference of less than $1.50, we can say that there is a 10% chance that our
-$1.50 **observed difference** was due to randomness. Most of the time you'd describe that as having a p value of 90 or a
+$1.50 **observed difference** was due to randomness. Most of the time you'd describe that as having a p-value of 0.1 or a
 confidence level of 90%.
 
 ## Building
