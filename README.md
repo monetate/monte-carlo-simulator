@@ -14,6 +14,9 @@ a way to:
 * Validate the accuracy of these statistical models
 * Create a feedback loop to further improve the models
 
+We chose Monte Carlo to accomplish this, but quickly found that running simulations in our language of choice, Python, on A/B Tests with several million
+visitors wasn't going to cut it.
+
 ## Monte Carlo Testing Intro
 
 *Jump right to [Building](#building) and [CLI Usage](#cli-usage) if you're already familiar with Monte Carlo Testing.*
