@@ -1,0 +1,9 @@
+language: c
+compiler:
+  - gcc
+  - clang
+
+install: sudo apt-get wget
+
+script: make test
+
