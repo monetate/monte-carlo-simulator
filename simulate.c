@@ -1,4 +1,5 @@
-/*
+/* This code is released under the MIT License, see ./LICENSE.
+ *
  * Copyright 2013 Monetate, Inc.
  *
  * Links against Double precision SIMD-oriented Fast Mersenne Twister (dSFMT) library.
