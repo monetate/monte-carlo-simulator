@@ -21,11 +21,10 @@ visitors wasn't going to cut it.
 
 *Jump right to [Building](#building) and [CLI Usage](#cli-usage) if you're already familiar with Monte Carlo Testing.*
 
-Say you're running an A/B Test on a site to see if the experiment variant had a significant effect on revenue per visit. 
-
+Say you're running an A/B Test on a site to see if the experiment variant had a significant effect on Revenue Per Visit. 
 To simplify things a bit, let's begin by looking at just three of these visitors.
-Our first visitor, John, visits twice but does not buy anything. Suzy visits once and makes one $9 purchase. Bob visits
-twice and makes two purchases at $8 and $9.
+Our first visitor, John, visited twice but did not buy anything. Suzy visited once and made one $9 purchase. Bob visited
+twice and made two purchases at $8 and $9.
 
 *In this case, a visitor may have multiple visits but the A/B Test randomizes based on visitor to give everyone a
 consistent experience.*
@@ -55,10 +54,10 @@ it put John and Suzy in the Expermiment group and Bob in the Control Group.
 | 1          | Experiment | 3           | 9                        | 81                                  |
 | 1          | Control    | 2           | 17                       | 145                                 |
 
-#### So What?
+#### Now What?
 
 Let's now assume we had 2 million visitors split evenly into Experiment and Control groups. We observed a difference in
-revenue per visit of $1.50 with a p-value of 0.11 in our two-tailed t-test.
+revenue per visit of $1.50 with a p-value of 11% in our two-tailed t-test.
 
 Now we run the Monte Carlo simulator with 10,000 iterations. We can then calculate the difference
 between the two groups for each of the ten thousand simulations. Most of these differences will be near zero because we randomly distributed the visitors
@@ -77,12 +76,20 @@ between the two groups, but some may lay outside of our $1.50 **observed differe
 If we see that 1000 randomized simulations had a difference of more than $1.50, we can say that there is a 10% chance that our
 $1.50 **observed difference** was due to randomness.
 
-Although not technically a direct comparison, we can compare our computed p-value of 0.11 to our simulated 10% result,
+Although technically not a direct comparison, we can compare our computed p-value of 11% to our simulated 10% result,
 which ain't bad. :ok_hand:
 
 ## Building
 
-The default `make` target will build a binary named `simulate` in the root directory.
+*Currently, the simulator will only build on a machine with a CPU with Intel's SSE2 instructions and C compiler which
+supports these features.*
+
+It's known to work on:
+
+* Amazon's EC2 instances with gcc 4.1.2
+* Travis CI Bluebox workers with gcc 4.6 and clang 3.3
+
+The default `make` target will build a binary named `simulate` in the project's root directory.
 
 ``` sh
 CC=gcc make
