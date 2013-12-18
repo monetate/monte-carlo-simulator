@@ -75,9 +75,10 @@ between the two groups, but some may lay outside of our $1.50 **observed differe
 | 9999       | Control    | 1006571     | 129993                   | 8738439                             |
 
 If we see that 1000 randomized simulations had a difference of more than $1.50, we can say that there is a 10% chance that our
-$1.50 **observed difference** was due to randomness. Most of the time you'd describe that as having a p-value of 0.10 or a
-confidence level of 90%.
+$1.50 **observed difference** was due to randomness.
 
+Although not technically a direct comparison, we can compare our computed p-value of 0.11 to our simulated 10% result,
+which ain't bad. :ok_hand:
 
 ## Building
 
