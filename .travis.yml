@@ -3,7 +3,7 @@ compiler:
   - gcc
   - clang
 
-install: sudo apt-get wget
+install: sudo apt-get install wget
 
 script: make test
 
