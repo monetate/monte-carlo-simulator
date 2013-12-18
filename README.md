@@ -119,7 +119,7 @@ You can pass weights as percentages or whole numbers. The following three varian
 ``` python
 ./simulate 10000 2 3 5
 ./simulate 10000 0.2 0.3 0.5
-./simulate 10000 400 600 10000
+./simulate 10000 400 600 1000
 ```
 
 #### Input CSV
