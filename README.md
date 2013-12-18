@@ -83,7 +83,7 @@ which ain't bad. :ok_hand:
 
 #### Downloading a Release
 
-# TODO: Update this after we create release
+TODO: Update this after we create release
 
 #### Building From Source
 
