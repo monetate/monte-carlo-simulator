@@ -5,13 +5,23 @@ A command line binary written in C for performing fast Monte Carlo Permutation T
 Uses [Double precision SIMD-oriented Fast Mersenne Twister
 (dSFMT)](http://www.math.sci.hiroshima-u.ac.jp/~m-mat/MT/SFMT/) for wicked fast pseudo-randomization.
 
+## Why?
+
+Our clients at [Monetate](http://monetate.com) run thousands of A/B tests each year. We've recently updated our
+statistical models to calculate significance of these campaigns' goals (Conversion Rate, Revenue Per Visit, etc) and wanted
+a way to:
+
+* Validate the accuracy of these statistical models
+* Create a feedback loop to further improve the models
+
 ## Monte Carlo Testing Intro
 
 *Jump right to [Building](#building) and [CLI Usage](#cli-usage) if you're already familiar with Monte Carlo Testing.*
 
 Say you're running an A/B Test on a site to see if the experiment variant had a significant effect on revenue per visit. 
 
-To simplify things a bit, let's just look at three of these visitors. Our first visitor, John, visits twice but does not buy anything. Suzy visits once and makes one $9 purchase. Bob visits
+To simplify things a bit, let's begin by looking at just three of these visitors.
+Our first visitor, John, visits twice but does not buy anything. Suzy visits once and makes one $9 purchase. Bob visits
 twice and makes two purchases at $8 and $9.
 
 *In this case, a visitor may have multiple visits but the A/B Test randomizes based on visitor to give everyone a
@@ -22,34 +32,49 @@ consistent experience.*
 | john   | Experiment | 2           | 0                        | 0                                   |
 | suzy   | Control    | 1           | 9                        | 81                                  |
 | bob    | Experiment | 2           | 17                       | 245                                 |
-| ...    | ...        | ...         | ...                      | ...                                 |
 
-From storing the info this way, we can compute our **observed difference** in revenue per visit between the two groups.
-Let's say our experiment group bought $1.50 more per visit than the control group. We can also compute the statistical
-significance of this result.
+From storing the info this way, we can compute our **observed difference** with statistical significance in revenue per visit between the two groups.
 
 To verify the computed significance, we can also send this data through a Monte Carlo Simulator to determine how likely
 the difference was due to randomness or not.
 
-If we go through every visitor 10,000 times and randomly place them in a theoretical Experimental or Control group,
-we can sum up y0, y1 and y2 for each group. We can then calculate the difference
-between the two groups for each of the ten thousand simulations and determine how many differences lay outside our $1.50
-**observed difference**.
+The simulator performs multiple permutations. On each interation the simulator will randomly assign visitors to a
+theoretical Experiment or Control group and sum up the y0, y1, y2 for all visitors in the group.
 
-If we go back to looking at only our three visitors, we can see that in this case, the first simulation put all three
-visitors in the Experiment group and none in the Control group. In the second simulation, it put John and Suzy in the Expermiment group and Bob in the Control Group.
+We can see that in the table below, two simulations were performed. The first simulation put all three
+visitors in the Experiment group and none in the Control group. In the second simulation,
+it put John and Suzy in the Expermiment group and Bob in the Control Group.
 
 | Simulation | Group      | Visits (y0) | Purchase Amount Sum (y1) | Purchase Amount Sum of Squares (y2) |
-| ------     | -------    | -------     | --------------------     | ------------------------------      |
+| ---------- | ---------- | ----------- | ------------------------ | ----------------------------------- |
 | 0          | Experiment | 5           | 26                       | 226                                 |
 | 0          | Control    | 0           | 0                        | 0                                   |
 | 1          | Experiment | 3           | 9                        | 81                                  |
 | 1          | Control    | 2           | 17                       | 145                                 |
-| ...        | ...        | ...         | ...                      | ...                                 |
 
-If we see that 9000 randomized simulations had a difference of less than $1.50, we can say that there is a 10% chance that our
-$1.50 **observed difference** was due to randomness. Most of the time you'd describe that as having a p-value of 0.1 or a
+#### So What?
+
+Let's now assume we had 2 million visitors split evenly into Experiment and Control groups. We observed a difference in
+revenue per visit of $1.50 with a p-value of 0.11 in our two-tailed t-test.
+
+Now we run the Monte Carlo simulator with 10,000 iterations. We can then calculate the difference
+between the two groups for each of the ten thousand simulations. Most of these differences will be near zero because we randomly distributed the visitors
+between the two groups, but some may lay outside of our $1.50 **observed difference**.
+
+| Simulation | Group      | Visits (y0) | Purchase Amount Sum (y1) | Purchase Amount Sum of Squares (y2) |
+| ---------- | ---------- | ----------- | ------------------------ | ----------------------------------- |
+| 0          | Experiment | 1000129     | 124124                   | 9193930                             |
+| 0          | Control    | 999871      | 111123                   | 10003234                            |
+| 1          | Experiment | 999976      | 154320                   | 8100857                             |
+| 1          | Control    | 1000024     | 82394                    | 7231043                             |
+| ...        | ...        | ...         | ...                      | ...                                 |
+| 9999       | Experiment | 993429      | 100001                   | 9534543                             |
+| 9999       | Control    | 1006571     | 129993                   | 8738439                             |
+
+If we see that 1000 randomized simulations had a difference of more than $1.50, we can say that there is a 10% chance that our
+$1.50 **observed difference** was due to randomness. Most of the time you'd describe that as having a p-value of 0.10 or a
 confidence level of 90%.
+
 
 ## Building
 
