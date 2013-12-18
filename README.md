@@ -19,7 +19,7 @@ visitors wasn't going to cut it.
 
 ## Monte Carlo Testing Intro
 
-*Jump right to [Building](#building) and [CLI Usage](#cli-usage) if you're already familiar with Monte Carlo Testing.*
+*Jump right to [Installation](#installation) and [CLI Usage](#cli-usage) if you're already familiar with Monte Carlo Testing.*
 
 Say you're running an A/B Test on a site to see if the experiment variant had a significant effect on Revenue Per Visit. 
 To simplify things a bit, let's begin by looking at just three of these visitors.
@@ -79,9 +79,15 @@ $1.50 **observed difference** was due to randomness.
 Although technically not a direct comparison, we can compare our computed p-value of 11% to our simulated 10% result,
 which ain't bad. :ok_hand:
 
-## Building
+## Installation
 
-*Currently, the simulator will only build on a machine with a CPU with Intel's SSE2 instructions and C compiler which
+#### Downloading a Release
+
+# TODO: Update this after we create release
+
+#### Building From Source
+
+*Currently, the simulator will only build on a machine with a CPU with Intel's SSE2 instructions and a C compiler which
 supports these features.*
 
 It's known to work on:
