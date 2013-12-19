@@ -3,7 +3,7 @@ dSFMT := dSFMT-src-2.2.2
 all: simulate
 
 $(dSFMT).tar.gz:
-	wget -N http://www.math.sci.hiroshima-u.ac.jp/~m-mat/bin/dl/dl.cgi?SFMT:$(dSFMT).tar.gz
+	wget http://www.math.sci.hiroshima-u.ac.jp/~m-mat/bin/dl/dl.cgi?SFMT:$(dSFMT).tar.gz -O $(dSFMT).tar.gz
 
 dSFMT: $(dSFMT).tar.gz
 	tar xzvf $(dSFMT).tar.gz
