@@ -3,7 +3,7 @@
 [travis-image]: https://secure.travis-ci.org/monetate/monte-carlo-simulator.png?branch=master
 [travis-link]: https://travis-ci.org/monetate/monte-carlo-simulator
 
-A command line binary written in C for performing fast Monte Carlo Permutation Tests.
+A command line binary written in C for performing fast Monte Carlo Permutation Tests for validating A/B test results.
 
 Uses [Double precision SIMD-oriented Fast Mersenne Twister
 (dSFMT)](http://www.math.sci.hiroshima-u.ac.jp/~m-mat/MT/SFMT/) for wicked fast pseudo-randomization.
@@ -22,7 +22,8 @@ visitors wasn't going to cut it.
 
 ## Monte Carlo Testing Intro
 
-*Jump right to [Installation](#installation) and [CLI Usage](#cli-usage) if you're already familiar with Monte Carlo Testing.*
+*Jump right to [Installation](#installation), [CLI Usage](#cli-usage) or straight to the
+[code](/monetate/monte-carlo-simulator/blob/master/simulate.c) if you're already familiar with Monte Carlo Testing.*
 
 Say you're running an A/B Test on a site to see if the experiment variant had a significant effect on Revenue Per Visit. 
 To simplify things a bit, let's begin by looking at just three of these visitors.
