@@ -87,7 +87,14 @@ determine whether or not the model is accurate enough.
 
 #### Downloading a Release
 
-TODO: Update this after we create release
+You can grab a pre-compiled binary for your OS and architecture from a [Github Release](/releases):
+
+``` python
+wget https://github.com/monetate/monte-carlo-simulator/releases/download/v0.1.0/monte-carlo-simulator-v0.1.0-Linux-i386.tar.gz \
+  -O monte-carlo-simulator-v0.1.0-Linux-i386.tar.gz
+tar -zxvf monte-carlo-simulator-v0.1.0-Linux-i386.tar.gz
+cd monte-carlo-simulator-v0.1.0-Linux-i386
+```
 
 #### Building From Source
 
