@@ -18,6 +18,6 @@ functional_tests: all
 test: functional_tests
 
 sync:
-	rsync -avt --delete --exclude=".git" --exclude="dSFMT*" . $(DEVBOX)
+	rsync -avt --delete --exclude=".git" --exclude="dSFMT*" --exclude="simulate" . $(DEVBOX)
 
 .PHONY : all test function_tests sync
