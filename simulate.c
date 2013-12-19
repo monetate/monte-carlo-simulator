@@ -12,7 +12,6 @@
  *    simulate iterations group_weight_0 group_weight_1 ...
  */
 
-#include <malloc.h>
 #include <stdint.h>
 #include <stdlib.h>
 #include <stdio.h>
@@ -97,8 +96,7 @@ simulate(FILE* in, FILE* out, double* group_weights, int groups, int simulations
     dsfmt_t dsfmt;
     dsfmt_init_gen_rand(&dsfmt, 1234);
 
-    /* 128 bit alignment for sse2 ops. */
-    double *randoms = (double *) memalign(16, sizeof(double) * simulations);
+    double *randoms = calloc(simulations, sizeof(double));
 
     /* For each input line:
      *   Parse summary line.
