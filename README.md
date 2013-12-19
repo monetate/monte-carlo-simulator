@@ -1,6 +1,5 @@
-# Monte Carlo Permutation Simulator 
+# Monte Carlo Simulator [![Build Status][travis-image]][travis-link]
 
-[![Build Status][travis-image]][travis-link]
 [travis-image]: https://secure.travis-ci.org/monetate/monte-carlo-simulator.png?branch=master
 [travis-link]: https://travis-ci.org/monetate/monte-carlo-simulator
 
