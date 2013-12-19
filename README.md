@@ -174,3 +174,5 @@ CC=gcc make test
 ### License
 
 This project is released under the [MIT License](http://www.opensource.org/licenses/MIT).
+
+[![Bitdeli Badge](https://d2weczhvl823v0.cloudfront.net/monetate/monte-carlo-simulator/trend.png)](https://bitdeli.com/free "Bitdeli Badge")
