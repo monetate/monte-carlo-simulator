@@ -39,8 +39,8 @@ consistent experience.*
 | suzy   | Control    | 1           | 9                        | 81                                    |
 | bob    | Experiment | 2           | 17                       | 145                                   |
 
-* * We include y2 here for [calculating variance](http://en.wikipedia.org/wiki/Algorithms_for_calculating_variance) in
-our models *
+<em>* We include y2 here for [calculating variance](http://en.wikipedia.org/wiki/Algorithms_for_calculating_variance) in
+our models</em>
 
 From storing the info this way, we can compute our **observed difference** with statistical significance in revenue per visit between the two groups.
 
