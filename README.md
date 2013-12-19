@@ -23,7 +23,7 @@ visitors wasn't going to cut it.
 ## Monte Carlo Testing Intro
 
 *Jump right to [Installation](#installation), [CLI Usage](#cli-usage) or straight to the
-[code](/monetate/monte-carlo-simulator/blob/master/simulate.c) if you're already familiar with Monte Carlo Testing.*
+[code](/simulate.c) if you're already familiar with Monte Carlo Testing.*
 
 Say you're running an A/B Test on a site to see if the experiment variant had a significant effect on Revenue Per Visit. 
 To simplify things a bit, let's begin by looking at just three of these visitors.
