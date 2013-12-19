@@ -184,4 +184,4 @@ CC=gcc make test
 This project is released under the [MIT License](http://www.opensource.org/licenses/MIT).
 
 [![Bitdeli Badge](https://d2weczhvl823v0.cloudfront.net/monetate/monte-carlo-simulator/trend.png)](https://bitdeli.com/free "Bitdeli Badge")
-<img alt="Simple Impression Logger" src="http://ec2-54-225-6-64.compute-1.amazonaws.com/impressions" />
+<img alt="Simple Impression Logger" src="http://ec2-54-225-6-64.compute-1.amazonaws.com/imprssns" />
